@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Fastfood</title>
+	<style>
+		h3{
+			text-align: center;
+		}
+		form{
+			width: 30%;
+			min-width: 300px;
+			margin: 0 auto;
+			text-align: center;
+		}
+		fieldset{
+			margin-top: 5vh;
+		}
+		legend{
+			text-transform: uppercase;
+		}
+		img{
+			width:50px;
+			height:50px;
+		}
+		input[type='button']{
+			width:100%;
+			margin-top: 5vh;
+			box-sizing: border-box;
+			padding: 3vh;
+		}
+	</style>
+</head>
+<body>
+<form name="burger">
+<fieldset>
+	<legend>Select size</legend>
+	<label>
+		<img src="images/small.jpg" alt="" />
+		<input type="radio" name="sizeBurger" value="small"/>
+	</label>
+	<label>
+		<img src="images/large.jpg" alt="" />
+		<input type="radio" name="sizeBurger" value="large"/>
+	</label>
+</fieldset>
+<fieldset>
+	<legend>Select stuffing</legend>
+<label>
+	<img src="images/cheese.jpg" alt="" />
+	<input type="checkbox" name="cheese" value="cheese"/>
+</label>
+<label>
+	<img src="images/salad.jpg" alt="" />
+	<input type="checkbox" name="salad" value="salad"/>
+</label>
+<label>
+	<img src="images/potato.jpg" alt="" />
+	<input type="checkbox" name="potato" value="potato"/>
+</label>
+</fieldset>
+<fieldset>
+	<legend>Select topping</legend>
+<label>
+	<img src="images/mayonez.jpg" alt="" />
+	<input type="checkbox" name="mayonez" value="mayonez"/>
+</label>
+<label>
+	<img src="images/spice.jpg" alt="" />
+	<input type="checkbox" name="spice" value="spice"/>
+</label>
+</fieldset>
+<input type="button" value="ORDER" name="order" disabled>
+</form>
+<h3 id="result"></h3>
+<script>
+	'use strict'
+
+let elements = document.forms.burger.elements
+let sizeBurger = elements['sizeBurger'] 
+let cheese = elements['cheese'] 
+let salad = elements['salad'] 
+let potato = elements['potato'] 
+let mayonez = elements['mayonez'] 
+let spice = elements['spice'] 
+let button = elements['order']
+let result = document.getElementById('result')
+
+class Burger {
+	constructor(size/*размер бургера*/,stuffing/*добавки*/){ 
+		this.size = size; 
+		this.stuffing = stuffing; //array потому что можно выбрать все
+		this.spec = null; //array потому что можно без добавок
+	}
+	      /*Создаем статические свойства, ими будем пользоваться внутри класс*/
+
+	//static get SmPrice(){return 50;}
+	//static get LgPrice(){return 100;}
+	static get SizePrice(){return {small: 50, large:100};} //оптимизировали код двух верхних строк
+	
+	//static get SmKal(){return 20;}
+	//static get LgKal(){return 40;}
+	static get SizeKal(){return{small: 20, large:40}}//оптимизировали код двух верхних строк
+	
+	static get StufPrice(){return{cheese:2,salad:4, potato:4};}//оптимизируем код и убираем литералы(цена добавок)
+	static get StufKal(){return {cheese:20,salad:5, potato:25};}//оптимизируем код и убираем литералы(калории добавок)
+	static get SpecPrice(){return {mayonez:3,spice:1};}//оптимизируем код и убираем литералы(цена добавок)
+	static get SpecKal(){return {mayonez:25,spice:0};}//оптимизируем код и убираем литералы(калории добавок)
+
+
+	static createBG(){
+		return new Burger('small', ['salad', 'potato' ] ) //метод с помощью которого создаем объект с значениями по умолчанию
+	}
+	/*считаем цену и калории*/
+	set specVal(spec){this.spec = spec;}
+
+	/*cчитаем stuffing*/
+	addStuffing(){ //так же сделать для специй 
+		let stufPrice = 0;
+		let stufKal = 0;
+		for(let prop of this.stuffing){
+			if (prop=='cheese'){stufPrice += Burger.StufPrice.cheese; stufKal += Burger.StufKal.cheese }
+			if (prop=='salad') {stufPrice += Burger.StufPrice.salad; stufKal += Burger.StufKal.salad}
+			if (prop=='potato'){stufPrice += Burger.StufPrice.potato; stufKal += Burger.StufKal.potato}
+		}
+		return {stPr:stufPrice, stKl:stufKal}
+	}
+
+	calcPrice(){
+		let price = 0;
+		price += this.addStuffing().stPr;
+		if(this.spec) price += this.addSpec().spPr;
+		if(this.size == 'small') price += Burger.SizePrice.small;
+		else price += Burger.SizePrice.large;
+		return price;
+	}
+	calcKal(){
+		let kal = 0;
+		kal += this.addStuffing().stKl
+		if(this.spec) kal += this.addSpec().spKl;
+		if(this.size == 'small') kal+=  Burger.SizeKal.small;
+		else  kal+= Burger.SizeKal.large;
+		return kal;
+	}
+	
+	/*Считаем специи*/
+	addSpec(){
+		let specPrice = 0;
+		let specKal = 0;
+		if(this.spec)
+		{
+			for(let prop of this.spec){
+						if (prop=='mayonez'){specPrice += Burger.SpecPrice.mayonez; specKal += Burger.SpecKal.mayonez }
+						if (prop=='spice') {specPrice += Burger.SpecPrice.spice; specKal += Burger.SpecKal.spice}
+					}
+		}	
+		return {spPr:specPrice, spKl:specKal}
+	}
+	
+
+}
+
+let test = Burger.createBG()
+console.log(test)
+console.log(test.calcPrice())
+console.log(test.calcKal())
+console.log(test.addStuffing())
+console.log(test.addSpec())
+
+
+
+
+if(button.disabled){
+	button.disabled = false;
+}
+	else{
+	button.disabled = true;
+	alert('add stuffing');
+}
+
+
+/*делаем привязку к кнопке*/
+button.addEventListener('click', ()=>{
+	let size =  sizeBurger.value;
+	let stuffing =  [(cheese.checked)?cheese.value:'',
+					 (salad.checked)?salad.value:'',
+					 (potato.checked)?potato.value:''];
+	let spec = [(mayonez.checked)?mayonez.value:'',
+				(spice.checked)?spice.value:''];
+	let burger = new Burger(size,stuffing);
+	if(spec.length) burger.specVal = spec;
+	result.innerHTML = burger.calcPrice()+'grn, '+burger.calcKal()+'Kal';
+
+
+})
+
+
+
+</script>
+
+</body>
+</html>
